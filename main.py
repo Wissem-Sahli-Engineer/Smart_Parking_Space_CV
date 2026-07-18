@@ -7,9 +7,13 @@ from skimage.transform import resize
 
 from sklearn.model_selection import train_test_split
 
-from sklearn.ensemble import RandomForestClassifiers
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
 # pyrefly: ignore [missing-import]
 from xgboost import XGBClassifier
+
+from sklearn.metrics import classification_report , accuracy_score
 
 # DATA 
 
@@ -35,12 +39,68 @@ print(len(data),len(labels))
 
 # Train / Test split
 
-x_train , x_train , y_train , y_test = train_test_split( data , labels , 
+x_train , x_test , y_train , y_test = train_test_split( data , labels , 
                                                 test_size = 0.2, 
                                                 shuffle = True,
                                                 stratify= labels,
                                                 random_state=42)
 
 
+svm = SVC(C=10, gamma=0.01)
+
+svm.fit(x_train, y_train)
+
+y_pred_svm = svm.predict(x_train)
+
+print("--- Résultats SVM ---")
+print(classification_report(y_train, y_pred_svm))
+
+score = accuracy_score ( svm.predict(x_test) , y_test )
+
+print(score)
+
+xgb = XGBClassifier(
+    n_estimators = 500,
+    max_depth = 6,
+    learning_rate = 0.05,
+
+    # device = "cuda",
+    tree_method = "hist",
+
+    subsample = 0.8,
+    colsample_bytree = 0.8,
+
+    random_state = 42,
+    eval_metric = 'logloss'
+)
+
+xgb.fit(x_train, y_train)
+
+y_pred_xgb = xgb.predict(x_train)
+
+print("--- XGBoost Results (Train) ---")
+print(classification_report(y_train, y_pred_xgb))
+
+rfc = RandomForestClassifier(n_estimators=100,max_depth=10,random_state=42,
+                            oob_score=True, n_jobs=-1)
+
+rfc.fit(x_train,y_train)
+
+y_rf_pred = rfc.predict(x_train)
+
+print("--- RANDOM FOREST Results (Train) ---")
+print(classification_report(y_train, y_rf_pred))
+
+oob_accuracy = rfc.oob_score_
+print(f"OOB Score (Global Precision) : {oob_accuracy:.4f}")
 
 
+y_pred_xgb = xgb.predict(x_test)
+print("---- XGBoost ----")
+print(classification_report(y_test,y_pred_xgb))
+print("")
+
+y_pred_rf = rfc.predict(x_test)
+print("---- RandomForest ----")
+print(classification_report(y_test,y_pred_rf))
+print("")
