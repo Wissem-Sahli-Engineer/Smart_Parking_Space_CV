@@ -26,6 +26,7 @@ def mouse_click(event, x, y, flags, param):
     with open(file, 'wb') as f:
         pickle.dump(spots_list, f)
 
+
 def get_fps(cap, pTime,type='default'):
     if type == "default":
         cTime = time.time()

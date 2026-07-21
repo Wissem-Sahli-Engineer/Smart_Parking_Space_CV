@@ -3,11 +3,11 @@ import pickle
 from utils import mouse_click
 
 # 1. Configuration
-IMAGE_PATH = 'parking.jpg'
-SAVE_FILE = 'parking_spots.pkl'
+IMAGE_PATH = "carPark.png" # 'parking.jpg'
+SAVE_FILE = "CarParkPos.pkl" # 'parking_spots.pkl'
 
-BOX_WIDTH = 90
-BOX_HEIGHT = 170
+BOX_WIDTH = 107 #90
+BOX_HEIGHT = 48 #170
 
 # 2. Try to load existing spots, or start fresh
 try:
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         for pos in spots_list:
             x, y = pos
             # Draw box: Magenta border with box counter
-            cv2.rectangle(img, (x, y), (x + BOX_WIDTH, y + BOX_HEIGHT), (255, 0, 255), 2)
+            cv2.rectangle(img, (x, y), (x + BOX_WIDTH, y + BOX_HEIGHT), (255, 0, 255), 1)
 
         # Show image and listen for keys
         cv2.imshow('Parking Spot Picker', img)

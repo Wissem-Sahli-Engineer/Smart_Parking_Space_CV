@@ -14,43 +14,50 @@ with open("./models/model_rfc.p",'rb') as f:
     model = pickle.load(f)
 
 cap = cv2.VideoCapture(IMAGE_PATH)
+_ = None
 
 while True :
 
-    test , img = cap.read()
-    if not test or img is None:
+    test , frame = cap.read()
+    if not test or frame is None:
+        break 
+
+    fps , _ = get_fps(cap, pTime = _,type='cap')
+
+    # Preprocess
+
+    for x,y in spots:
+        img = frame[y : y + BOX_HEIGHT, x : x + BOX_WIDTH]
+
+        if img is None or img.size == 0 or img.shape[0] != BOX_HEIGHT or img.shape[1] != BOX_WIDTH:
+            continue
+        
+        # Convert BGR (OpenCV) to RGB (skimage.io.imread format used in training)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # Resize to (50, 50) as done in training
+        img = cv2.resize(img, (50, 50))
+
+        # Normalize to [0, 1] range (skimage.transform.resize returns float values in [0, 1])
+        img = img / 255.0
+
+        img = img.flatten().reshape(1, -1)
+
+        if model.predict(img)[0] == 1:
+            color = (0, 0, 255)  # Red (BGR) for occupied/not_empty
+        else:
+            color = (0, 255, 0)  # Green (BGR) for empty
+
+        cv2.rectangle(frame, (x,y),(x+BOX_WIDTH , y+BOX_HEIGHT),
+                    color,2)
+
+
+    draw_fps_capsule(frame, fps)
+    
+    cv2.imshow('Live Parking',frame)
+
+    if cv2.waitKey(1) & 0xFF == ord(' '):
         break
 
-frame = cv2.imread(IMAGE_PATH)
-
-for x,y in spots:
-    img = frame[y : y + BOX_HEIGHT, x : x + BOX_WIDTH]
-
-    # Convert BGR (OpenCV) to RGB (skimage.io.imread format used in training)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    # Resize to (50, 50) as done in training
-    img = cv2.resize(img, (50, 50))
-
-    # Normalize to [0, 1] range (skimage.transform.resize returns float values in [0, 1])
-    img = img / 255.0
-
-    img = img.flatten().reshape(1, -1)
-
-    if model.predict(img)[0] == 1:
-        color = (0, 0, 255)  # Red (BGR) for occupied/not_empty
-    else:
-        color = (0, 255, 0)  # Green (BGR) for empty
-
-    cv2.rectangle(frame, (x,y),(x+BOX_WIDTH , y+BOX_HEIGHT),
-                color,2)
-
-cv2.imshow("Parking", frame)
-cv2.waitKey(0)
+cap.release()
 cv2.destroyAllWindows()
-
-# saving it 
-
-cv2.imwrite(("parking_results.jpeg"),frame)
-
-print("---- Image Saved! -----")
