@@ -2,35 +2,36 @@ import pickle
 import cv2
 # pyrefly: ignore [missing-import]
 import numpy as np
-from SpotPicker import IMAGE_PATH , BOX_WIDTH , BOX_HEIGHT
-
-from utils import get_fps , draw_fps_capsule
+from SpotPicker import SAVE_FILE, BOX_WIDTH, BOX_HEIGHT
 
 
-with open('parking_spots.pkl','rb') as f:
+
+with open(SAVE_FILE, 'rb') as f:
     spots = pickle.load(f)
 
 with open("./models/model_rfc.p",'rb') as f:
     model = pickle.load(f)
 
-cap = cv2.VideoCapture(IMAGE_PATH)
-_ = None
+VIDEO_PATH = "carPark.mp4"
 
-while True :
+cap = cv2.VideoCapture(VIDEO_PATH)
 
-    test , frame = cap.read()
+frame_count = 0
+spot_crops = []
+valid_spots = []
+
+while True:
+
+    test, frame = cap.read()
+
     if not test or frame is None:
         break 
 
-    fps , _ = get_fps(cap, pTime = _,type='cap')
-
+    frame_count += 1
     # Preprocess
 
     for x,y in spots:
         img = frame[y : y + BOX_HEIGHT, x : x + BOX_WIDTH]
-
-        if img is None or img.size == 0 or img.shape[0] != BOX_HEIGHT or img.shape[1] != BOX_WIDTH:
-            continue
         
         # Convert BGR (OpenCV) to RGB (skimage.io.imread format used in training)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -43,20 +44,20 @@ while True :
 
         img = img.flatten().reshape(1, -1)
 
-        if model.predict(img)[0] == 1:
-            color = (0, 0, 255)  # Red (BGR) for occupied/not_empty
-        else:
-            color = (0, 255, 0)  # Green (BGR) for empty
+        spot_crops.append(img.flatten())
+        valid_spots.append((x, y))
 
-        cv2.rectangle(frame, (x,y),(x+BOX_WIDTH , y+BOX_HEIGHT),
-                    color,2)
+    if frame_count % 30 == 0 or spot_crops:
+        predictions = model.predict(np.array(spot_crops))
+    
+    for (x, y), pred in zip(valid_spots, predictions):
 
-
-    draw_fps_capsule(frame, fps)
+        color = (0, 0, 255) if pred == 1 else (0, 255, 0)
+        cv2.rectangle(frame, (x, y), (x + BOX_WIDTH, y + BOX_HEIGHT), color, 2)
     
     cv2.imshow('Live Parking',frame)
 
-    if cv2.waitKey(1) & 0xFF == ord(' '):
+    if cv2.waitKey(30) & 0xFF == ord(' '):
         break
 
 cap.release()
