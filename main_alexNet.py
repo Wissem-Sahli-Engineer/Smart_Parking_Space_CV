@@ -49,23 +49,13 @@ while True:
 
     # Loop video back to start when it reaches the end
     if not ret or frame is None:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        continue
+        break
 
     free_spots = 0
 
     for x, y in spots:
         # Extract crop for current spot
         spot_crop = frame[y : y + BOX_HEIGHT, x : x + BOX_WIDTH]
-
-        # Edge Safeguard: Skip out-of-bounds crops
-        if (
-            spot_crop is None
-            or spot_crop.size == 0
-            or spot_crop.shape[0] != BOX_HEIGHT
-            or spot_crop.shape[1] != BOX_WIDTH
-        ):
-            continue
 
         # Preprocess patch into 4D Caffe Blob (227x227 input size, scaled 1/255.0)
         blob = cv2.dnn.blobFromImage(
