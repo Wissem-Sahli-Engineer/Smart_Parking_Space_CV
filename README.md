@@ -8,6 +8,19 @@ An advanced, high-performance computer vision pipeline designed to automate park
 
 ---
 
+## 📊 Classification Results Visualization
+
+When running the inference pipeline, the Random Forest model analyzes every cropped bounding box defined in [SpotPicker.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/SpotPicker.py) and classifies its occupancy status:
+
+- **🟢 Green Boxes**: Spots classified as **Empty** (`0`).
+- **🔴 Red Boxes**: Spots classified as **Occupied** (`1`).
+
+Here is the resulting output saved at `parking_results.jpeg`:
+
+![Parking Occupancy Classification Results](parking_results.jpeg)
+
+---
+
 ## 🏗️ Architecture & Flow Scheme
 
 ```mermaid
@@ -49,23 +62,10 @@ Smart_Parking_Space_CV/
 
 Below is a breakdown of the core components within the repository:
 
-*   [SpotPicker.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/SpotPicker.py): The interactive GUI tool to define bounding boxes of the parking spaces. Left-click to add a spot, right-click to remove. The spot coordinates are serialized to `parking_spots.pkl`.
-*   [utils.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/utils.py): Mouse callback helper functions mapping left and right clicks to coordinate manipulations.
-*   [main.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/main.py): Loads the saved spot coordinates and Random Forest model, processes the current image frame, runs predictions on each crop, and renders the result window.
-*   [model.ipynb](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/model.ipynb): Jupyter Notebook showing data loading, preprocessing, model training (SVM, XGBoost, Random Forest), split optimization to avoid spatial data leakage, and pickle serialization.
-
----
-
-## 📊 Classification Results Visualization
-
-When running the inference pipeline, the Random Forest model analyzes every cropped bounding box defined in [SpotPicker.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/SpotPicker.py) and classifies its occupancy status:
-
-- **🟢 Green Boxes**: Spots classified as **Empty** (`0`).
-- **🔴 Red Boxes**: Spots classified as **Occupied** (`1`).
-
-Here is the resulting output saved at `parking_results.jpeg`:
-
-![Parking Occupancy Classification Results](parking_results.jpeg)
+- [SpotPicker.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/SpotPicker.py): The interactive GUI tool to define bounding boxes of the parking spaces. Left-click to add a spot, right-click to remove. The spot coordinates are serialized to `parking_spots.pkl`.
+- [utils.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/utils.py): Mouse callback helper functions mapping left and right clicks to coordinate manipulations.
+- [main.py](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/main.py): Loads the saved spot coordinates and Random Forest model, processes the current image frame, runs predictions on each crop, and renders the result window.
+- [model.ipynb](file:///Users/wess/Desktop/computer%20vision/Smart_Parking_Space_CV/model.ipynb): Jupyter Notebook showing data loading, preprocessing, model training (SVM, XGBoost, Random Forest), split optimization to avoid spatial data leakage, and pickle serialization.
 
 ---
 
@@ -92,15 +92,18 @@ img_flat = img_normalized.flatten().reshape(1, -1)
 ## 🛠️ Setup & Requirements
 
 ### Prerequisites
+
 Make sure you have **Python 3.8 or higher** installed.
 
 ### Step 1: Create and Activate a Virtual Environment
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
 ### Step 2: Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -110,16 +113,22 @@ pip install -r requirements.txt
 ## 🎮 Usage Controls
 
 ### 1. Defining Parking Spots
+
 Run the spot picker tool:
+
 ```bash
 python SpotPicker.py
 ```
+
 - **Left-Click**: Add a new parking spot bounding box.
-- **Right-Click**: Delete a bounding box.
+
+* **Right-Click**: Delete a bounding box.
 - **q / Space / ESC**: Save coordinates and exit.
 
 ### 2. Running Real-Time Detection
+
 Run the main script to perform inference on the selected spaces and output the color-coded visual results:
+
 ```bash
 python main.py
 ```
